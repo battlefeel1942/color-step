@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Step</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .color-step {
+            height: 100vh;
+            flex: 1;
+        }
+        .color-input {
+            width: 100%;
+            padding: 0;
+            border: none;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+            height: 2.5rem;
+            border-radius: 0.25rem;
+        }
+        .color-input::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        .color-input::-webkit-color-swatch {
+            border: none;
+            border-radius: 0.25rem;
+        }
+        .color-input::-moz-color-swatch {
+            border: none;
+            border-radius: 0.25rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-1/4 bg-white shadow-lg p-4 flex flex-col">
+            <h1 class="text-xl font-bold mb-4">Color Step</h1>
+            <label for="startColor" class="block text-gray-700">Start Color</label>
+            <input id="startColor" type="color" class="color-input mb-2 rounded" value="#3498db">
+
+            <label for="endColor" class="block text-gray-700">End Color</label>
+            <input id="endColor" type="color" class="color-input mb-2 rounded" value="#e74c3c">
+
+            <label for="steps" class="block text-gray-700">Steps</label>
+            <input id="steps" type="number" min="1" class="block w-full mb-4 p-2 border border-gray-300 rounded" value="5">
+
+            <div class="border-b mb-4 flex justify-between">
+                <button id="tabRgb" class="py-2 px-4 text-gray-500 border-b-2 border-transparent hover:text-blue-500 hover:border-blue-500 focus:outline-none">RGB Values</button>
+                <button id="tabHex" class="py-2 px-4 text-gray-500 border-b-2 border-transparent hover:text-blue-500 hover:border-blue-500 focus:outline-none">Hex Values</button>
+            </div>
+            <div id="outputRgb" class="overflow-y-auto"></div>
+            <div id="outputHex" class="hidden overflow-y-auto"></div>
+        </div>
+
+        <!-- Content -->
+        <div id="color-container" class="w-3/4 flex"></div>
+    </div>
+
+    <script>
+        // Cache DOM elements
+        const startColorInput = document.getElementById('startColor');
+        const endColorInput = document.getElementById('endColor');
+        const stepsInput = document.getElementById('steps');
+        const colorContainer = document.getElementById('color-container');
+        const outputRgb = document.getElementById('outputRgb');
+        const outputHex = document.getElementById('outputHex');
+        const tabRgb = document.getElementById('tabRgb');
+        const tabHex = document.getElementById('tabHex');
+
+        function hexToRgb(hex) {
+            hex = hex.replace(/^#/, '');
+            let r = parseInt(hex.substring(0, 2), 16);
+            let g = parseInt(hex.substring(2, 4), 16);
+            let b = parseInt(hex.substring(4, 6), 16);
+            return { r: r, g: g, b: b };
+        }
+
+        function interpolateRgb(startRgb, endRgb, steps) {
+            let stepFactor = 1 / (steps + 1);
+            let interpolatedColors = [];
+            for (let i = 0; i <= steps + 1; i++) {
+                let r = Math.round(startRgb.r + stepFactor * i * (endRgb.r - startRgb.r));
+                let g = Math.round(startRgb.g + stepFactor * i * (endRgb.g - startRgb.g));
+                let b = Math.round(startRgb.b + stepFactor * i * (endRgb.b - startRgb.b));
+                interpolatedColors.push({ r: r, g: g, b: b });
+            }
+            return interpolatedColors;
+        }
+
+        function rgbToHex(r, g, b) {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+        }
+
+        function createColorDivs(startColor, endColor, steps) {
+            const startRgb = hexToRgb(startColor);
+            const endRgb = hexToRgb(endColor);
+            const gradient = interpolateRgb(startRgb, endRgb, steps);
+            
+            // Clear previous content
+            colorContainer.innerHTML = '';
+            outputRgb.innerHTML = '';
+            outputHex.innerHTML = '';
+
+            gradient.forEach(color => {
+                const colorDiv = document.createElement('div');
+                colorDiv.className = 'color-step';
+                colorDiv.style.backgroundColor = rgbToHex(color.r, color.g, color.b);
+                colorContainer.appendChild(colorDiv);
+
+                outputRgb.innerHTML += `RGB: (${color.r}, ${color.g}, ${color.b})<br>`;
+                outputHex.innerHTML += `Hex: ${rgbToHex(color.r, color.g, color.b)}<br>`;
+            });
+        }
+
+        function updateInputs() {
+            const startColor = startColorInput.value;
+            const endColor = endColorInput.value;
+            const steps = parseInt(stepsInput.value);
+
+            // Update address bar without the '#'
+            const params = new URLSearchParams({
+                start: startColor.replace('#', ''),
+                end: endColor.replace('#', ''),
+                steps: steps
+            });
+            window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+
+            createColorDivs(startColor, endColor, steps);
+        }
+
+        // Add event listeners to all inputs in one go
+        [startColorInput, endColorInput, stepsInput].forEach(input => {
+            input.addEventListener('input', updateInputs);
+        });
+
+        // Tabs functionality
+        tabRgb.addEventListener('click', () => {
+            outputRgb.classList.remove('hidden');
+            outputHex.classList.add('hidden');
+        });
+
+        tabHex.addEventListener('click', () => {
+            outputRgb.classList.add('hidden');
+            outputHex.classList.remove('hidden');
+        });
+
+        // Load values from URL on page load
+        window.addEventListener('load', () => {
+            const params = new URLSearchParams(window.location.search);
+            const startColor = `#${params.get('start') || '3498db'}`;
+            const endColor = `#${params.get('end') || 'e74c3c'}`;
+            const steps = parseInt(params.get('steps')) || 5;
+
+            startColorInput.value = startColor;
+            endColorInput.value = endColor;
+            stepsInput.value = steps;
+
+            createColorDivs(startColor, endColor, steps);
+        });
+
+        // Initial call to generate gradient
+        createColorDivs("#3498db", "#e74c3c", 5);
+    </script>
+</body>
+</html>
