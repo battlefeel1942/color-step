@@ -6,10 +6,6 @@
     <title>Color Step</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .color-step {
-            height: 100vh;
-            flex: 1;
-        }
         .color-input {
             width: 100%;
             padding: 0;
@@ -32,13 +28,16 @@
             border: none;
             border-radius: 0.25rem;
         }
+        .color-step {
+            height: 100%;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
 
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <div class="w-1/4 bg-white shadow-lg p-4 flex flex-col">
+        <div class="w-full lg:w-1/4 bg-white shadow-lg p-4 flex flex-col">
             <h1 class="text-xl font-bold mb-4">Color Step</h1>
             <label for="startColor" class="block text-gray-700">Start Color</label>
             <input id="startColor" type="color" class="color-input mb-2 rounded" value="#3498db">
@@ -58,7 +57,7 @@
         </div>
 
         <!-- Content -->
-        <div id="color-container" class="w-3/4 flex"></div>
+        <div id="color-container" class="w-full lg:w-3/4 flex"></div>
     </div>
 
     <script>
@@ -106,10 +105,13 @@
             outputRgb.innerHTML = '';
             outputHex.innerHTML = '';
 
+            const colorStepWidth = 100 / (steps + 2);
+
             gradient.forEach(color => {
                 const colorDiv = document.createElement('div');
                 colorDiv.className = 'color-step';
                 colorDiv.style.backgroundColor = rgbToHex(color.r, color.g, color.b);
+                colorDiv.style.width = `${colorStepWidth}%`;
                 colorContainer.appendChild(colorDiv);
 
                 outputRgb.innerHTML += `RGB: (${color.r}, ${color.g}, ${color.b})<br>`;
