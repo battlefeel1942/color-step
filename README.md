@@ -1,5 +1,8 @@
 # Color Step Gradient Generator
 
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/battlefeel1942/color-step)
+[![Website](https://img.shields.io/badge/Website-Live%20Demo-green)](https://battlefeel1942.github.io/color-step/)
+
 This project is a simple web application that generates a color gradient based on user input. The gradient is displayed as a series of color steps, and users can specify the start color, end color, and the number of steps. The state of the gradient can be shared via URL.
 
 ## Features
@@ -24,10 +27,6 @@ The application supports the following URL parameters:
 - `start`: The start color in hex format (without the `#`).
 - `end`: The end color in hex format (without the `#`).
 - `steps`: The number of steps in the gradient.
-
-### Example
-
-To create a gradient from blue to red with 5 steps, you can use the following URL: https://battlefeel1942.github.io/color-step/?start=3498db&end=e74c3c&steps=5
 
 
 ## Development
